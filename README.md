@@ -28,7 +28,7 @@ SchoolProject
 <li>비행기가 적 비행기 뒤로가도 gameover되는 현상 수정.
 </ul>
 
-<ul>
 다음에 할 것.
+<ul>
 <li>총알과 적비행기 충돌시 파괴모션 추가
 </ul>
