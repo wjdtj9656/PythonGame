@@ -6,7 +6,7 @@ SchoolProject
 <li>검은 배경화면 만들기</li>
 </ul>
 
-
+<hr/>
 2021/08/11 update
 
 추가한 것
@@ -33,7 +33,7 @@ SchoolProject
 <li>총알과 적비행기 충돌시 파괴모션 추가
 </ul>
 
-
+<hr/>
 2021/08/13 update
 
 추가한 것.
