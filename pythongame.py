@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[9]:
+# In[2]:
 
 
 import pygame
@@ -422,6 +422,8 @@ def initGame():
     global titleImg,startImg,quitImg,clickStartImg,clickQuitImg,Button
     
     pygame.init()
+    pygame.mixer.init()
+    pygame.mixer.pre_init(44100,-16,2,16)
     gamepad = pygame.display.set_mode((pad_width,pad_height))
     pygame.display.set_caption('pydi2021')
     fighter = pygame.image.load('image/fighter.png')
@@ -446,7 +448,7 @@ def initGame():
     background2 = background1.copy()
     shotSound = pygame.mixer.Sound('sound/shotSound.wav')
     shotSound.set_volume(0.3)
-    hitSound = pygame.mixer.Sound('sound/hitSound.wav')
+    hitSound = pygame.mixer.Sound('sound/hitSound2.wav')
     hitSound.set_volume(0.3)
     deadSound = pygame.mixer.Sound('sound/dead.wav')
     deadSound.set_volume(1.0)
