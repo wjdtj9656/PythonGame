@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[2]:
+# In[3]:
 
 
 import pygame
@@ -13,6 +13,7 @@ from time import sleep
 BLACK = (0,0,0)
 RED = (255,0,0)
 pad_width = 480
+
 pad_height = 640
 fighter_width = 36;
 fighter_height = 38;
@@ -46,6 +47,13 @@ def drawPower(count):
     text = font.render('Power :' + str(count),True,(255,255,255))
     gamepad.blit(text,(0,20))
     
+#속도 표시
+def drawSpeed(count):
+    global gamepad
+    font = pygame.font.SysFont(None,20)
+    text = font.render('Speed :' + str(count),True,(255,255,255))
+    gamepad.blit(text,(0,30))
+    
 #화면에 글씨 표시(종료)
 def dispMessage(text):
     global gamepad
@@ -55,7 +63,7 @@ def dispMessage(text):
     textpos.center = (pad_width/2,pad_height/2)
     gamepad.blit(text,textpos)
     pygame.display.update()
-    sleep(2)
+    sleep(4)
     initGame()
     
 def showLevel(text):
@@ -108,9 +116,9 @@ def back(background,x,y):
     
 #게임 실행
 def runGame():
-    global gamepad,clock,fighter,enemy,enemy2,enemy3,bullet,bomb,item
+    global gamepad,clock,fighter,enemy,enemy2,enemy3,bullet,bomb,item,item2,itemNum
     global background2,background1
-    global shotSound,hitSound,deadSound
+    global shotSound,hitSound,deadSound,powerSound
     
     isShot = False
     shotcount = 0
@@ -126,6 +134,7 @@ def runGame():
     levelStandard = 5
     level = 1
     maxShot = 2
+    fighter_speed = 5
     
     #좌표 리스트
     bullet_xy = []
@@ -151,19 +160,19 @@ def runGame():
                 if event.key == pygame.K_LEFT:
                     if(x_change < -5):
                         continue
-                    x_change -= 5
+                    x_change -= fighter_speed
                 elif event.key == pygame.K_RIGHT:
                     if(x_change > 5):
                         continue
-                    x_change += 5
+                    x_change += fighter_speed
                 elif event.key == pygame.K_UP:
                     if(y_change < -5):
                         continue
-                    y_change -= 5
+                    y_change -= fighter_speed
                 elif event.key == pygame.K_DOWN:
                     if(y_change > 5):
                         continue
-                    y_change += 5
+                    y_change += fighter_speed
                     
                 elif event.key == pygame.K_LCTRL:
                     if len(bullet_xy) < maxShot:
@@ -171,6 +180,10 @@ def runGame():
                         bullet_x = x + fighter_width/4
                         bullet_y = y - fighter_height
                         bullet_xy.append([bullet_x,bullet_y])
+                        #bullet_x2 = x + fighter_width/6
+                        #bullet_y2 = y - fighter_height
+                        #bullet_xy.append([bullet_x2,bullet_y])
+                        
                         
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
@@ -192,7 +205,7 @@ def runGame():
             enemy2_x = random.randrange(0,pad_width-enemy_width)
             enemy2_y = 0
             enemy2_speed = 6
-            enemy2_xy.append([enemy_x,enemy_y])
+            enemy2_xy.append([enemy2_x,enemy2_y])
             currentEnemy2 += 1
             
         #업그레이드2 적기 초기 위치
@@ -200,7 +213,7 @@ def runGame():
             enemy3_x = random.randrange(0,pad_width-enemy_width)
             enemy3_y = 0
             enemy3_speed = 9
-            enemy3_xy.append([enemy_x,enemy_y])
+            enemy3_xy.append([enemy3_x,enemy3_y])
             currentEnemy3 += 1
             
         #아이템 초기 위치
@@ -259,13 +272,12 @@ def runGame():
             for i,bxy in enumerate(bullet_xy):
                 bxy[1] -= 10
                 bullet_xy[i][1] = bxy[1]
-                
                 #총알이 적 비행기를 맞추었을때.
                 for ex,ey in enemy_xy:
                     if bxy[1] < ey:
                         if(bxy[0] > ex-10 and bxy[0] < ex-10 + enemy_width):
                             #폭발소리
-                            pygame.mixer.Sound.play(hitSound)
+                            #pygame.mixer.Sound.play(hitSound)
                             #총알,적 비행기 삭제
                             if bxy in bullet_xy:
                                 bullet_xy.remove(bxy)
@@ -282,7 +294,7 @@ def runGame():
                     if bxy[1] < ey:
                         if(bxy[0] > ex-10 and bxy[0] < ex-10 + enemy_width):
                             #폭발소리
-                            pygame.mixer.Sound.play(hitSound)
+                            #pygame.mixer.Sound.play(hitSound)
                             #총알,적 비행기 삭제
                             if bxy in bullet_xy:
                                 bullet_xy.remove(bxy)
@@ -379,15 +391,24 @@ def runGame():
                         pass
         if len(item_xy) != 0:
             for ix,iy in item_xy:
-                drawObject(item,ix,iy)
+                if itemNum == 0:
+                    drawObject(item,ix,iy)
+                elif itemNum == 1:
+                    drawObject(item2,ix,iy)
                 itemCount -= 1
                 
          #전투기와 아이템이 충돌했을때.
         for ix,iy in item_xy:
-             if(ix > x and ix < x + fighter_width and iy > y and iy < y + fighter_height) or (ix +enemy_width > x and ix +item_width < x + fighter_width and iy + item_height > y and iy < y +fighter_height):
+            if(itemNum == 0 and ix > x and ix < x + fighter_width and iy > y and iy < y + fighter_height) or (ix +enemy_width > x and ix +item_width < x + fighter_width and iy + item_height > y and iy < y +fighter_height):
                 itemCount -= 1
                 item_xy.remove([ix,iy])
+                pygame.mixer.Sound.play(powerSound)
                 maxShot += 1
+            elif(itemNum == 1 and ix > x and ix < x + fighter_width and iy > y and iy < y + fighter_height) or (ix +enemy_width > x and ix +item_width < x + fighter_width and iy + item_height > y and iy < y +fighter_height):
+                itemCount -= 1
+                item_xy.remove([ix,iy])
+                pygame.mixer.Sound.play(powerSound)
+                fighter_speed += 1
                 
         #총알 그리기
         if len(bullet_xy) != 0:
@@ -397,7 +418,7 @@ def runGame():
         drawScore(shotcount)
         drawLevel(level)
         drawPower(maxShot)
-                
+        drawSpeed(fighter_speed)
         
                 
         if shotcount > levelStandard:
@@ -405,6 +426,7 @@ def runGame():
             maxEnemy += 1
             level += 1
             itemCount = random.choice([0,1])
+            itemNum = random.choice([0,1])
             if(level > 3):
                 maxEnemy2 += 1
             if level > 4:
@@ -416,14 +438,14 @@ def runGame():
     pygame.quit()
 #게임 초기화
 def initGame():
-    global gamepad,clock,fighter,enemy,enemy2,enemy3,bullet,bomb,item
+    global gamepad,clock,fighter,enemy,enemy2,enemy3,bullet,bomb,item,item2
     global background1,background2
-    global shotSound,hitSound,deadSound
+    global shotSound,hitSound,deadSound,powerSound
     global titleImg,startImg,quitImg,clickStartImg,clickQuitImg,Button
     
     pygame.init()
     pygame.mixer.init()
-    pygame.mixer.pre_init(44100,-16,2,16)
+    pygame.mixer.pre_init(44100,-16,2,1)
     gamepad = pygame.display.set_mode((pad_width,pad_height))
     pygame.display.set_caption('pydi2021')
     fighter = pygame.image.load('image/fighter.png')
@@ -444,12 +466,17 @@ def initGame():
     bomb = pygame.transform.scale(bomb,(enemy_width+30,enemy_height+30))
     item = pygame.image.load('image/levelup.png')
     item = pygame.transform.scale(item,(item_width,item_height))
+    item2 = pygame.image.load('image/speedup.png')
+    item2 = pygame.transform.scale(item2,(item_width,item_height))
+    item2 = pygame.transform.rotate(item2,90)
     background1 = pygame.image.load('image/background.png')
     background2 = background1.copy()
     shotSound = pygame.mixer.Sound('sound/shotSound.wav')
     shotSound.set_volume(0.3)
     hitSound = pygame.mixer.Sound('sound/hitSound2.wav')
     hitSound.set_volume(0.3)
+    powerSound = pygame.mixer.Sound('sound/getpower.wav')
+    powerSound.set_volume(0.3)
     deadSound = pygame.mixer.Sound('sound/dead.wav')
     deadSound.set_volume(1.0)
     pygame.mixer.music.load('sound/bgm.wav')
@@ -488,6 +515,10 @@ def mainmenu():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    runGame()
+                
         gamepad.fill(BLACK)
         
         titletext = gamepad.blit(titleImg,(140,320))
