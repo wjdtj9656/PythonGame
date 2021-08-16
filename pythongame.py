@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[3]:
+# In[8]:
 
 
 import pygame
@@ -13,7 +13,6 @@ from time import sleep
 BLACK = (0,0,0)
 RED = (255,0,0)
 pad_width = 480
-
 pad_height = 640
 fighter_width = 36;
 fighter_height = 38;
@@ -54,6 +53,13 @@ def drawSpeed(count):
     text = font.render('Speed :' + str(count),True,(255,255,255))
     gamepad.blit(text,(0,30))
     
+#돈 표시
+def drawMoney(count):
+    global gameplad
+    font = pygame.font.SysFont(None,20)
+    text = font.render('Money :' + str(count),True,(255,255,255))
+    gamepad.blit(text,(400,0))
+    
 #화면에 글씨 표시(종료)
 def dispMessage(text):
     global gamepad
@@ -63,8 +69,19 @@ def dispMessage(text):
     textpos.center = (pad_width/2,pad_height/2)
     gamepad.blit(text,textpos)
     pygame.display.update()
-    sleep(4)
+    sleep(1)
     initGame()
+    
+def showMessage(text):
+    global gamepad
+    textfont = pygame.font.Font('font/DX.ttf',20)
+    text = textfont.render(text,True,RED)
+    textpos = text.get_rect()
+    textpos.center = (pad_width/2,pad_height/2)
+    gamepad.blit(text,textpos)
+    pygame.display.update()
+    sleep(2)
+    
     
 def showLevel(text):
     global gamepad
@@ -116,7 +133,7 @@ def back(background,x,y):
     
 #게임 실행
 def runGame():
-    global gamepad,clock,fighter,enemy,enemy2,enemy3,bullet,bomb,item,item2,itemNum
+    global gamepad,clock,fighter,enemy,enemy2,enemy3,bullet,bomb,item,item2,itemNum,maxShot,fighter_speed,money
     global background2,background1
     global shotSound,hitSound,deadSound,powerSound
     
@@ -135,6 +152,7 @@ def runGame():
     level = 1
     maxShot = 2
     fighter_speed = 5
+    money = 0
     
     #좌표 리스트
     bullet_xy = []
@@ -183,8 +201,14 @@ def runGame():
                         #bullet_x2 = x + fighter_width/6
                         #bullet_y2 = y - fighter_height
                         #bullet_xy.append([bullet_x2,bullet_y])
-                        
-                        
+                elif event.key == pygame.K_p:
+                    pause()
+                    x_change = 0
+                    y_change = 0
+                elif event.key == pygame.K_s:
+                    shopmenu()
+                    x_change = 0
+                    y_change = 0
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
                     x_change = 0;
@@ -281,6 +305,7 @@ def runGame():
                             #총알,적 비행기 삭제
                             if bxy in bullet_xy:
                                 bullet_xy.remove(bxy)
+                                money += 1
                             enemy_xy.remove([ex,ey])
                             # 현재 적비행기 수 -1
                             currentEnemy -= 1
@@ -298,6 +323,7 @@ def runGame():
                             #총알,적 비행기 삭제
                             if bxy in bullet_xy:
                                 bullet_xy.remove(bxy)
+                                money += 2
                             enemy2_xy.remove([ex,ey])
                             # 현재 적비행기 수 -1
                             currentEnemy2 -= 1
@@ -315,6 +341,7 @@ def runGame():
                             #총알,적 비행기 삭제
                             if bxy in bullet_xy:
                                 bullet_xy.remove(bxy)
+                                money += 3
                             enemy3_xy.remove([ex,ey])
                             # 현재 적비행기 수 -1
                             currentEnemy3 -= 1
@@ -399,12 +426,12 @@ def runGame():
                 
          #전투기와 아이템이 충돌했을때.
         for ix,iy in item_xy:
-            if(itemNum == 0 and ix > x and ix < x + fighter_width and iy > y and iy < y + fighter_height) or (ix +enemy_width > x and ix +item_width < x + fighter_width and iy + item_height > y and iy < y +fighter_height):
+            if(itemNum == 0 and ix > x and ix < x + fighter_width and iy > y and iy < y + fighter_height) or (itemNum ==0 and ix +enemy_width > x and ix +item_width < x + fighter_width and iy + item_height > y and iy < y +fighter_height):
                 itemCount -= 1
                 item_xy.remove([ix,iy])
                 pygame.mixer.Sound.play(powerSound)
                 maxShot += 1
-            elif(itemNum == 1 and ix > x and ix < x + fighter_width and iy > y and iy < y + fighter_height) or (ix +enemy_width > x and ix +item_width < x + fighter_width and iy + item_height > y and iy < y +fighter_height):
+            elif(itemNum == 1 and ix > x and ix < x + fighter_width and iy > y and iy < y + fighter_height) or (itemNum ==1 and ix +enemy_width > x and ix +item_width < x + fighter_width and iy + item_height > y and iy < y +fighter_height):
                 itemCount -= 1
                 item_xy.remove([ix,iy])
                 pygame.mixer.Sound.play(powerSound)
@@ -419,14 +446,16 @@ def runGame():
         drawLevel(level)
         drawPower(maxShot)
         drawSpeed(fighter_speed)
-        
+        drawMoney(money)
                 
         if shotcount > levelStandard:
             levelStandard += 5
             maxEnemy += 1
             level += 1
             itemCount = random.choice([0,1])
+            
             itemNum = random.choice([0,1])
+            
             if(level > 3):
                 maxEnemy2 += 1
             if level > 4:
@@ -441,7 +470,8 @@ def initGame():
     global gamepad,clock,fighter,enemy,enemy2,enemy3,bullet,bomb,item,item2
     global background1,background2
     global shotSound,hitSound,deadSound,powerSound
-    global titleImg,startImg,quitImg,clickStartImg,clickQuitImg,Button
+    global titleImg,startImg,quitImg,clickStartImg,clickQuitImg,Button,helpImg,helptitleImg,attackImg,moveImg,pauseImg,shopImg,preImg
+    global shoptitleImg,moneyImg
     
     pygame.init()
     pygame.mixer.init()
@@ -489,7 +519,24 @@ def initGame():
     quitImg = pygame.image.load("image/quit.png")
     clickStartImg = pygame.image.load("image/clickedstart.png")
     clickQuitImg = pygame.image.load("image/clickedquit.png")
-
+    helpImg = pygame.image.load("image/helpi.png")
+    helpImg = pygame.transform.scale(helpImg,(100,100))
+    helptitleImg = pygame.image.load("image/helptitle.png")
+    helptitleImg = pygame.transform.scale(helptitleImg,(100,100))
+    attackImg = pygame.image.load("image/attack.PNG")
+    attackImg = pygame.transform.scale(attackImg,(200,30))
+    moveImg = pygame.image.load("image/move.PNG")
+    moveImg = pygame.transform.scale(moveImg,(200,30))
+    pauseImg = pygame.image.load("image/pause.PNG")
+    pauseImg = pygame.transform.scale(pauseImg,(200,30))
+    shopImg = pygame.image.load("image/shop.PNG")
+    shopImg = pygame.transform.scale(shopImg,(200,30))
+    preImg = pygame.image.load("image/pre.PNG")
+    preImg = pygame.transform.scale(preImg,(200,100))
+    shoptitleImg = pygame.image.load("image/shoptitle.png")
+    shoptitleImg = pygame.transform.scale(shoptitleImg,(200,200))
+    moneyImg = pygame.image.load("image/needMoney.png")
+    moneyImg = pygame.transform.scale(moneyImg,(50,50))
     class Button:
         def __init__(self, img_in, x, y, width, height, img_act, x_act,y_act, action = None):
             mouse = pygame.mouse.get_pos()
@@ -521,12 +568,82 @@ def mainmenu():
                 
         gamepad.fill(BLACK)
         
-        titletext = gamepad.blit(titleImg,(140,320))
+        titletext = gamepad.blit(titleImg,(140,200))
         startButton = Button(startImg,120,430,140,20,clickStartImg,120,430,runGame)
         quitButton = Button(quitImg,320,430,60,20,clickQuitImg,320,430,quitgame)
+        helpButton = Button(helpImg,200,480,200,480,helpImg,200,480,helpmenu)
         pygame.display.update()
         clock.tick(15)
+def helpmenu():
+    helpm = True
+    while helpm:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    mainmenu()
+                    
+        gamepad.fill(BLACK)
         
+        helptitle = gamepad.blit(helptitleImg,(200,100))
+        attackTitle = gamepad.blit(attackImg,(150,300))
+        moveTitle = gamepad.blit(moveImg,(150,350))
+        pauseTitle = gamepad.blit(pauseImg,(150,400))
+        shopTitle = gamepad.blit(shopImg,(150,450))
+        preTitle = Button(preImg,200,500,200,480,preImg,200,500,mainmenu)
+        pygame.display.update()
+        clock.tick(15)
+def shopmenu():
+    global maxShot,fighter_speed,money,shop
+    shop = True
+    gamepad.fill(BLACK)
+    while shop:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    shop = False
+        shoptitle = gamepad.blit(shoptitleImg,(140,100))
+        powerButton = Button(item,120,430,100,100,item,120,430,buyPowerUp)
+        speedButton = Button(item2,320,430,100,100,item2,320,430,buySpeedUp)
+        moneyImg1 = gamepad.blit(moneyImg,(110,460))
+        moneyImg2 = gamepad.blit(moneyImg,(310,460))
+        pygame.display.update()
+        clock.tick(15)
+def buyPowerUp():
+    global maxShot,money,shop
+    if money >= 50:
+        maxShot += 1
+        money -= 50
+        showMessage("구매완료//게임으로 돌아갑니다.")
+        shop = False
+    else:
+        showMessage("돈 부족//게임으로 돌아갑니다.")
+        shop = False
+def buySpeedUp():
+    global fighter_speed,money,shop
+    if money >= 50:
+        fighter_speed += 1
+        money -= 50
+        showMessage("구매완료//게임으로 돌아갑니다.")
+        shop = False
+    else:
+        showMessage("돈부족//게임으로 돌아갑니다.")
+        shop = False
+def pause():
+    pause = True
+    while pause:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key ==pygame.K_p:
+                    pause = False
 initGame()
 #runGame()
 
