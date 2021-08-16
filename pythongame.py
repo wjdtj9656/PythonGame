@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[8]:
+# In[18]:
 
 
 import pygame
@@ -133,7 +133,7 @@ def back(background,x,y):
     
 #게임 실행
 def runGame():
-    global gamepad,clock,fighter,enemy,enemy2,enemy3,bullet,bomb,item,item2,itemNum,maxShot,fighter_speed,money
+    global gamepad,clock,fighter,enemy,enemy2,enemy3,bullet,bomb,item,item2,itemNum,maxShot,fighter_speed,money,bullets
     global background2,background1
     global shotSound,hitSound,deadSound,powerSound
     
@@ -152,8 +152,8 @@ def runGame():
     level = 1
     maxShot = 2
     fighter_speed = 5
-    money = 0
-    
+    money = 999
+    bullets = 1
     #좌표 리스트
     bullet_xy = []
     enemy_xy = []
@@ -194,13 +194,25 @@ def runGame():
                     
                 elif event.key == pygame.K_LCTRL:
                     if len(bullet_xy) < maxShot:
+                        interval = 0
+                        temp = 0
                         pygame.mixer.Sound.play(shotSound)
                         bullet_x = x + fighter_width/4
                         bullet_y = y - fighter_height
                         bullet_xy.append([bullet_x,bullet_y])
-                        #bullet_x2 = x + fighter_width/6
-                        #bullet_y2 = y - fighter_height
-                        #bullet_xy.append([bullet_x2,bullet_y])
+                        if bullets >= 2:
+                            for bulletNum in range(1,bullets):
+                                if(bulletNum >= maxShot):
+                                    break
+                                interval -= 10
+                                if bulletNum %2 ==0:
+                                    temp = abs(interval)
+                                elif bulletNum %2 ==1:
+                                    temp = interval
+                                bullet_x2 = x + temp
+                                bullet_y2 = y - fighter_height
+                                bullet_xy.append([bullet_x2,bullet_y])
+                                
                 elif event.key == pygame.K_p:
                     pause()
                     x_change = 0
@@ -298,7 +310,7 @@ def runGame():
                 bullet_xy[i][1] = bxy[1]
                 #총알이 적 비행기를 맞추었을때.
                 for ex,ey in enemy_xy:
-                    if bxy[1] < ey:
+                    if bxy[1] < ey-10 + enemy_height and bxy[1] > ey-10:
                         if(bxy[0] > ex-10 and bxy[0] < ex-10 + enemy_width):
                             #폭발소리
                             #pygame.mixer.Sound.play(hitSound)
@@ -316,7 +328,7 @@ def runGame():
                             shotcount += 1
                 #총알이 (업그레이드)적 비행기를 맞추었을때.
                 for ex,ey in enemy2_xy:
-                    if bxy[1] < ey:
+                    if bxy[1] < ey-10 + enemy_height and bxy[1] > ey-10:
                         if(bxy[0] > ex-10 and bxy[0] < ex-10 + enemy_width):
                             #폭발소리
                             #pygame.mixer.Sound.play(hitSound)
@@ -334,7 +346,7 @@ def runGame():
                             shotcount += 1
                 #총알이 (업그레이드2)적 비행기를 맞추었을때.
                 for ex,ey in enemy3_xy:
-                    if bxy[1] < ey:
+                    if bxy[1] < ey-10 + enemy_height and bxy[1] > ey-10:
                         if(bxy[0] > ex-10 and bxy[0] < ex-10 + enemy_width):
                             #폭발소리
                             pygame.mixer.Sound.play(hitSound)
@@ -471,7 +483,7 @@ def initGame():
     global background1,background2
     global shotSound,hitSound,deadSound,powerSound
     global titleImg,startImg,quitImg,clickStartImg,clickQuitImg,Button,helpImg,helptitleImg,attackImg,moveImg,pauseImg,shopImg,preImg
-    global shoptitleImg,moneyImg
+    global shoptitleImg,moneyImg,bulletImg,moneyImg2
     
     pygame.init()
     pygame.mixer.init()
@@ -537,6 +549,11 @@ def initGame():
     shoptitleImg = pygame.transform.scale(shoptitleImg,(200,200))
     moneyImg = pygame.image.load("image/needMoney.png")
     moneyImg = pygame.transform.scale(moneyImg,(50,50))
+    moneyImg2 = pygame.image.load("image/price1.PNG")
+    moneyImg2 = pygame.transform.scale(moneyImg2,(50,50))
+    bulletImg = pygame.image.load("image/bullets.png")
+    bulletImg = pygame.transform.scale(bulletImg,(70,70))
+    
     class Button:
         def __init__(self, img_in, x, y, width, height, img_act, x_act,y_act, action = None):
             mouse = pygame.mouse.get_pos()
@@ -599,6 +616,10 @@ def shopmenu():
     global maxShot,fighter_speed,money,shop
     shop = True
     gamepad.fill(BLACK)
+    
+    def shopSwitch():
+        global shop
+        shop = False
     while shop:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -610,8 +631,11 @@ def shopmenu():
         shoptitle = gamepad.blit(shoptitleImg,(140,100))
         powerButton = Button(item,120,430,100,100,item,120,430,buyPowerUp)
         speedButton = Button(item2,320,430,100,100,item2,320,430,buySpeedUp)
-        moneyImg1 = gamepad.blit(moneyImg,(110,460))
-        moneyImg2 = gamepad.blit(moneyImg,(310,460))
+        bulletButton = Button(bulletImg,210,300,100,100,bulletImg,210,300,bulletUp)
+        moneyImg1a = gamepad.blit(moneyImg,(110,460))
+        moneyImg2a = gamepad.blit(moneyImg,(310,460))
+        moneyImg3a = gamepad.blit(moneyImg2,(210,370))
+        preTitle = Button(preImg,200,500,200,480,preImg,200,500,shopSwitch)
         pygame.display.update()
         clock.tick(15)
 def buyPowerUp():
@@ -629,6 +653,16 @@ def buySpeedUp():
     if money >= 50:
         fighter_speed += 1
         money -= 50
+        showMessage("구매완료//게임으로 돌아갑니다.")
+        shop = False
+    else:
+        showMessage("돈부족//게임으로 돌아갑니다.")
+        shop = False
+def bulletUp():
+    global fighter_speed,money,shop,bullets
+    if money >= 50:
+        bullets += 1
+        money -= 200
         showMessage("구매완료//게임으로 돌아갑니다.")
         shop = False
     else:
