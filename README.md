@@ -151,4 +151,4 @@ SchoolProject
 </ul>
 
 <hr/>
-링크 : https://youtu.be/MiTG9BpALIM
+링크(게임 테스트 기록영상) : https://youtu.be/MiTG9BpALIM
